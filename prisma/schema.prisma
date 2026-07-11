@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  PRODUCT_MANAGER
+  PRODUCT_TEAM_LEAD
+  DEVELOPER
+  SALES
+  MARKETING
+  MANAGEMENT
+  ADMIN_VIEWER
+  VIEWER
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum FeatureStatus {
+  NO_STATUS
+  PLANNED
+  IN_PROGRESS
+  BETA
+  RELEASED
+  DELAYED
+  POSTPONED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(VIEWER)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Product {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  color       String     @default("#2E63F6")
+  icon        String     @default("package")
+  visibility  Visibility @default(PRIVATE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  modules  Module[]
+  features Feature[]
+
+  @@map("products")
+}
+
+model Module {
+  id        String   @id @default(cuid())
+  productId String
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product  Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  features Feature[]
+
+  @@map("modules")
+}
+
+model Feature {
+  id            String        @id @default(cuid())
+  productId     String
+  moduleId      String?
+  parentId      String?
+  title         String
+  description   String?
+  status        FeatureStatus @default(NO_STATUS)
+  progress      Int           @default(0)
+  priority      Int           @default(3)
+  startDate     DateTime?
+  endDate       DateTime?
+  relaunchDate  DateTime?
+  owner         String        @default("Unassigned")
+  visibility    Visibility    @default(PRIVATE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  product  Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  module   Module?   @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  parent   Feature?  @relation("FeatureToParent", fields: [parentId], references: [id], onDelete: Cascade)
+  children Feature[] @relation("FeatureToParent")
+
+  @@map("features")
+}
