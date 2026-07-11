@@ -14,6 +14,16 @@ export class ModulesService {
     });
   }
 
+  findPublic(productId?: string) {
+    return this.prisma.module.findMany({
+      where: {
+        product: { visibility: 'PUBLIC' },
+        ...(productId && productId !== 'all' ? { productId } : {}),
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
   async findOne(id: string) {
     const mod = await this.prisma.module.findUnique({ where: { id } });
     if (!mod) throw new NotFoundException('Module not found');
