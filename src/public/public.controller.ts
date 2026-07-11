@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { Public } from '../auth/decorators/roles.decorator';
 import { ProductsService } from '../products/products.service';
 import { FeaturesService } from '../features/features.service';
+import { ModulesService } from '../modules/modules.service';
 import { QueryFeatureDto } from '../features/dto/query-feature.dto';
 
 // Everything here is unauthenticated and restricted to PUBLIC visibility records,
@@ -12,6 +13,7 @@ export class PublicController {
   constructor(
     private productsService: ProductsService,
     private featuresService: FeaturesService,
+    private modulesService: ModulesService,
   ) {}
 
   @Get('products')
@@ -22,6 +24,11 @@ export class PublicController {
   @Get('products/:id')
   findProduct(@Param('id') id: string) {
     return this.productsService.findOne(id, true);
+  }
+
+  @Get('modules')
+  findModules(@Query('productId') productId?: string) {
+    return this.modulesService.findPublic(productId);
   }
 
   @Get('roadmap')
