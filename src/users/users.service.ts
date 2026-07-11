@@ -29,15 +29,15 @@ export class UsersService {
     const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (existing) throw new ConflictException('A user with this email already exists');
 
-    const tempPassword = dto.password || randomBytes(6).toString('hex');
+    const tempPassword = dto.password || randomBytes(4).toString('hex');
     const hash = await bcrypt.hash(tempPassword, 10);
 
     const user = await this.prisma.user.create({
       data: { name: dto.name, email: dto.email, role: dto.role, password: hash, active: true },
     });
 
-    // In production this is where you'd email tempPassword to the invited user.
-    return { ...this.sanitize(user), tempPassword: dto.password ? undefined : tempPassword };
+    // No email is sent — the admin copies this password from the UI and shares it directly.
+    return { ...this.sanitize(user), tempPassword };
   }
 
   async update(id: string, dto: UpdateUserDto) {
