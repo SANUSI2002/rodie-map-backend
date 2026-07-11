@@ -103,3 +103,16 @@ model Feature {
 
   @@map("features")
 }
+
+model AppSettings {
+  id             String   @id @default("global")
+  brandColor     String   @default("#2E63F6")
+  showModules    Boolean  @default(true)
+  showLevel1     Boolean  @default(true)
+  showLevel2     Boolean  @default(true)
+  showLevel3     Boolean  @default(true)
+  showExactDates Boolean  @default(false)
+  updatedAt      DateTime @updatedAt
+
+  @@map("app_settings")
+}
