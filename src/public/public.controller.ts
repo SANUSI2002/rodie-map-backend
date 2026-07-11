@@ -3,10 +3,9 @@ import { Public } from '../auth/decorators/roles.decorator';
 import { ProductsService } from '../products/products.service';
 import { FeaturesService } from '../features/features.service';
 import { ModulesService } from '../modules/modules.service';
+import { SettingsService } from '../settings/settings.service';
 import { QueryFeatureDto } from '../features/dto/query-feature.dto';
 
-// Everything here is unauthenticated and restricted to PUBLIC visibility records,
-// mirroring the prototype's landing page and public read-only roadmap view.
 @Controller('public')
 @Public()
 export class PublicController {
@@ -14,6 +13,7 @@ export class PublicController {
     private productsService: ProductsService,
     private featuresService: FeaturesService,
     private modulesService: ModulesService,
+    private settingsService: SettingsService,
   ) {}
 
   @Get('products')
@@ -29,6 +29,11 @@ export class PublicController {
   @Get('modules')
   findModules(@Query('productId') productId?: string) {
     return this.modulesService.findPublic(productId);
+  }
+
+  @Get('settings')
+  findSettings() {
+    return this.settingsService.get();
   }
 
   @Get('roadmap')
