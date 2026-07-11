@@ -11,6 +11,7 @@ import { FeaturesModule } from './features/features.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ReportsModule } from './reports/reports.module';
 import { PublicModule } from './public/public.module';
+import { SettingsModule } from './settings/settings.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Module({
@@ -26,9 +27,9 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     DashboardModule,
     ReportsModule,
     PublicModule,
+    SettingsModule,
   ],
   providers: [
-    // Every route requires a valid JWT unless marked with @Public().
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
