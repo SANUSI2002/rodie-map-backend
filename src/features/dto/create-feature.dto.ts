@@ -50,6 +50,10 @@ export class CreateFeatureDto {
 
   @IsOptional()
   @IsString()
+  releaseDate?: string;
+
+  @IsOptional()
+  @IsString()
   owner?: string;
 
   @IsOptional()
