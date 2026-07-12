@@ -91,6 +91,7 @@ model Feature {
   startDate     DateTime?
   endDate       DateTime?
   relaunchDate  DateTime?
+  releaseDate   DateTime?
   owner         String        @default("Unassigned")
   visibility    Visibility    @default(PRIVATE)
   createdAt     DateTime      @default(now())
