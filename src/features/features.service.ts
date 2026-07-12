@@ -110,6 +110,7 @@ export class FeaturesService {
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
         relaunchDate: dto.relaunchDate ? new Date(dto.relaunchDate) : undefined,
+        releaseDate: dto.releaseDate ? new Date(dto.releaseDate) : undefined,
       },
     });
   }
@@ -120,6 +121,7 @@ export class FeaturesService {
     if (dto.startDate) data.startDate = new Date(dto.startDate);
     if (dto.endDate) data.endDate = new Date(dto.endDate);
     if (dto.relaunchDate) data.relaunchDate = new Date(dto.relaunchDate);
+    if (dto.releaseDate) data.releaseDate = new Date(dto.releaseDate);
     // Auto-fill progress to 100 when marked RELEASED, matching prototype's onFeatureStatusChange().
     if (dto.status === 'RELEASED' && dto.progress === undefined) data.progress = 100;
     return this.prisma.feature.update({ where: { id }, data });
