@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { ActivityService } from '../activity/activity.service';
 import { LoginDto } from './dto/login.dto';
 
 function initialsOf(name: string) {
@@ -18,6 +19,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
+    private activityService: ActivityService,
   ) {}
 
   async login(dto: LoginDto) {
@@ -31,6 +33,14 @@ export class AuthService {
     }
 
     const token = this.jwt.sign({ sub: user.id, role: user.role });
+
+    await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+    await this.activityService.log({
+      actorName: user.name,
+      action: 'logged in',
+      entityType: 'Session',
+      entityName: user.name,
+    });
 
     return {
       accessToken: token,
