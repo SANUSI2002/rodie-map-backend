@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Visibility } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ActivityService } from '../activity/activity.service';
 import { CreateFeatureDto } from './dto/create-feature.dto';
 import { UpdateFeatureDto } from './dto/update-feature.dto';
 import { QueryFeatureDto } from './dto/query-feature.dto';
 
 @Injectable()
 export class FeaturesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private activityService: ActivityService,
+  ) {}
 
   private buildWhere(query: QueryFeatureDto): Prisma.FeatureWhereInput {
     const where: Prisma.FeatureWhereInput = {};
@@ -98,7 +102,7 @@ export class FeaturesService {
     return feature;
   }
 
-  create(dto: CreateFeatureDto) {
+  create(dto: CreateFeatureDto, actorName = 'Someone') {
     return this.prisma.feature.create({
       data: {
         ...dto,
@@ -112,11 +116,14 @@ export class FeaturesService {
         relaunchDate: dto.relaunchDate ? new Date(dto.relaunchDate) : undefined,
         releaseDate: dto.releaseDate ? new Date(dto.releaseDate) : undefined,
       },
+    }).then(async (feature) => {
+      await this.activityService.log({ actorName, action: 'created', entityType: 'Feature', entityName: feature.title });
+      return feature;
     });
   }
 
-  async update(id: string, dto: UpdateFeatureDto) {
-    await this.findOne(id);
+  async update(id: string, dto: UpdateFeatureDto, actorName = 'Someone') {
+    const before = await this.findOne(id);
     const data: any = { ...dto };
     if (dto.startDate) data.startDate = new Date(dto.startDate);
     if (dto.endDate) data.endDate = new Date(dto.endDate);
@@ -124,13 +131,17 @@ export class FeaturesService {
     if (dto.releaseDate) data.releaseDate = new Date(dto.releaseDate);
     // Auto-fill progress to 100 when marked RELEASED, matching prototype's onFeatureStatusChange().
     if (dto.status === 'RELEASED' && dto.progress === undefined) data.progress = 100;
-    return this.prisma.feature.update({ where: { id }, data });
+    const feature = await this.prisma.feature.update({ where: { id }, data });
+    const detail = dto.status && dto.status !== before.status ? `status changed to ${dto.status}` : undefined;
+    await this.activityService.log({ actorName, action: 'updated', entityType: 'Feature', entityName: feature.title, detail });
+    return feature;
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+  async remove(id: string, actorName = 'Someone') {
+    const feature = await this.findOne(id);
     // Children cascade-delete via the Prisma relation.
     await this.prisma.feature.delete({ where: { id } });
+    await this.activityService.log({ actorName, action: 'deleted', entityType: 'Feature', entityName: feature.title });
     return { success: true };
   }
 }
