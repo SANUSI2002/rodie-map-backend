@@ -4,6 +4,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { RequireEditor } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('products')
 @UseGuards(RolesGuard)
@@ -22,25 +23,25 @@ export class ProductsController {
 
   @RequireEditor()
   @Post()
-  create(@Body() dto: CreateProductDto) {
-    return this.productsService.create(dto);
+  create(@Body() dto: CreateProductDto, @CurrentUser() user: { name: string }) {
+    return this.productsService.create(dto, user?.name);
   }
 
   @RequireEditor()
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
-    return this.productsService.update(id, dto);
+  update(@Param('id') id: string, @Body() dto: UpdateProductDto, @CurrentUser() user: { name: string }) {
+    return this.productsService.update(id, dto, user?.name);
   }
 
   @RequireEditor()
   @Patch(':id/toggle-visibility')
-  toggleVisibility(@Param('id') id: string) {
-    return this.productsService.toggleVisibility(id);
+  toggleVisibility(@Param('id') id: string, @CurrentUser() user: { name: string }) {
+    return this.productsService.toggleVisibility(id, user?.name);
   }
 
   @RequireEditor()
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: { name: string }) {
+    return this.productsService.remove(id, user?.name);
   }
 }
