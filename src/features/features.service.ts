@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Prisma, Visibility } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
@@ -102,8 +102,17 @@ export class FeaturesService {
     return feature;
   }
 
-  create(dto: CreateFeatureDto, actorName = 'Someone') {
-    return this.prisma.feature.create({
+  private async assertParentNotCancelled(parentId?: string | null) {
+    if (!parentId) return;
+    const parent = await this.prisma.feature.findUnique({ where: { id: parentId } });
+    if (parent && parent.status === 'CANCELLED') {
+      throw new BadRequestException('Cannot add a sub-feature under a cancelled feature');
+    }
+  }
+
+  async create(dto: CreateFeatureDto, actorName = 'Someone') {
+    await this.assertParentNotCancelled(dto.parentId);
+    const feature = await this.prisma.feature.create({
       data: {
         ...dto,
         status: dto.status || 'NO_STATUS',
@@ -116,14 +125,14 @@ export class FeaturesService {
         relaunchDate: dto.relaunchDate ? new Date(dto.relaunchDate) : undefined,
         releaseDate: dto.releaseDate ? new Date(dto.releaseDate) : undefined,
       },
-    }).then(async (feature) => {
-      await this.activityService.log({ actorName, action: 'created', entityType: 'Feature', entityName: feature.title });
-      return feature;
     });
+    await this.activityService.log({ actorName, action: 'created', entityType: 'Feature', entityName: feature.title });
+    return feature;
   }
 
   async update(id: string, dto: UpdateFeatureDto, actorName = 'Someone') {
     const before = await this.findOne(id);
+    if (dto.parentId) await this.assertParentNotCancelled(dto.parentId);
     const data: any = { ...dto };
     if (dto.startDate) data.startDate = new Date(dto.startDate);
     if (dto.endDate) data.endDate = new Date(dto.endDate);
