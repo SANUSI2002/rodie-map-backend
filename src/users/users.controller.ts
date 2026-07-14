@@ -32,31 +32,31 @@ export class UsersController {
 
   @Roles(Role.SUPER_ADMIN)
   @Post()
-  invite(@Body() dto: CreateUserDto) {
-    return this.usersService.invite(dto);
+  invite(@Body() dto: CreateUserDto, @CurrentUser() user: { name: string }) {
+    return this.usersService.invite(dto, user?.name);
   }
 
   @Roles(Role.SUPER_ADMIN)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.usersService.update(id, dto);
+  update(@Param('id') id: string, @Body() dto: UpdateUserDto, @CurrentUser() user: { name: string }) {
+    return this.usersService.update(id, dto, user?.name);
   }
 
   @Roles(Role.SUPER_ADMIN)
   @Patch(':id/deactivate')
-  deactivate(@Param('id') id: string) {
-    return this.usersService.deactivate(id);
+  deactivate(@Param('id') id: string, @CurrentUser() user: { name: string }) {
+    return this.usersService.deactivate(id, user?.name);
   }
 
   @Roles(Role.SUPER_ADMIN)
   @Patch(':id/reset-password')
-  resetPassword(@Param('id') id: string) {
-    return this.usersService.resetPassword(id);
+  resetPassword(@Param('id') id: string, @CurrentUser() user: { name: string }) {
+    return this.usersService.resetPassword(id, user?.name);
   }
 
   @Roles(Role.SUPER_ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: { name: string }) {
+    return this.usersService.remove(id, user?.name);
   }
 }
