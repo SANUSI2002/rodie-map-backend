@@ -36,14 +36,15 @@ enum FeatureStatus {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(VIEWER)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  password    String
+  role        Role      @default(VIEWER)
+  active      Boolean   @default(true)
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("users")
 }
@@ -116,4 +117,16 @@ model AppSettings {
   updatedAt      DateTime @updatedAt
 
   @@map("app_settings")
+}
+
+model Activity {
+  id         String   @id @default(cuid())
+  actorName  String
+  action     String
+  entityType String
+  entityName String
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  @@map("activities")
 }
