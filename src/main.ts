@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { HealthService } from './health/health.service';
+import { HealthTrackingFilter } from './health/health-tracking.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +19,8 @@ async function bootstrap() {
       forbidNonWhitelisted: false,
     }),
   );
+
+  app.useGlobalFilters(new HealthTrackingFilter(app.get(HealthService)));
 
   app.setGlobalPrefix('api');
 
